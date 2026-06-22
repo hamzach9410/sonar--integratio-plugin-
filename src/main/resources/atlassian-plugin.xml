@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atlassian-plugin key="com.yourcompany.bitbucket.sonar" name="SonarQube Integration Plugin" plugins-version="2">
+    <plugin-info>
+        <description>Integrates SonarQube quality gates into Bitbucket PRs</description>
+        <version>1.0.0</version>
+        <vendor name="Your Organization" url="http://yourcompany.com" />
+    </plugin-info>
+
+    <!-- Web Resources (Icons, Styles, Scripts) -->
+    <web-resource key="sonar-global-resources" name="Sonar Global Resources">
+        <resource type="download" name="sonar-icon.png" location="icons/sonar-icon.png" />
+        <context>bitbucket.page.pull-requests.view</context>
+        <context>bitbucket.page.repository.view</context>
+        <context>bitbucket.page.repository.branches</context>
+    </web-resource>
+
+    <!-- Global Admin Settings Link -->
+    <web-item key="sonar-global-admin-link" section="system.admin/globalsettings" weight="100">
+        <label>SonarQube Global Config</label>
+        <link>/plugins/servlet/sonar/global-config</link>
+    </web-item>
+
+    <!-- Settings Page in Repository Admin -->
+    <web-item key="sonar-admin-link" section="bitbucket.project.settings.panel/repository-settings" weight="100">
+        <label>SonarQube Settings</label>
+        <link>/plugins/servlet/sonar/admin/sonar-config</link>
+    </web-item>
+
+    <!-- Servlet to handle settings form -->
+    <!-- PR List Decorator (Icon in Column) -->
+    <web-panel key="sonar-pr-list-decorator" location="bitbucket.pull-requests.table-column.after" weight="1000">
+        <description>Adds Quality Gate status to the PR list table</description>
+        <resource type="soy" name="view" location="com.yourcompany.bitbucket.sonar:sonar-admin-soy/com.yourcompany.bitbucket.sonar.prListBadge" />
+    </web-panel>
+
+    <!-- Branch List Decorator (Icon in Column) -->
+    <web-panel key="sonar-branch-list-decorator" location="bitbucket.branches.table-column.after" weight="1000">
+        <description>Adds Quality Gate status to the Branches list table</description>
+        <resource type="soy" name="view" location="com.yourcompany.bitbucket.sonar:sonar-admin-soy/com.yourcompany.bitbucket.sonar.branchListBadge" />
+    </web-panel>
+
+    <!-- Repository Overview Dashboard -->
+    <web-panel key="sonar-repo-dashboard" location="bitbucket.web.repository.overview.summary" weight="50">
+        <description>Shows Quality Gate summary on the repo overview page</description>
+        <resource type="soy" name="view" location="com.yourcompany.bitbucket.sonar:sonar-admin-soy/com.yourcompany.bitbucket.sonar.repoDashboard" />
+    </web-panel>
+
+    <servlet key="sonar-config-servlet" class="com.yourcompany.bitbucket.sonar.admin.SonarConfigServlet">
+        <url-pattern>/admin/sonar-config/*</url-pattern>
+    </servlet>
+
+    <servlet key="sonar-global-config-servlet" class="com.yourcompany.bitbucket.sonar.admin.SonarGlobalConfigServlet">
+        <url-pattern>/global-config</url-pattern>
+    </servlet>
+
+    <servlet key="sonar-proxy-servlet" class="com.yourcompany.bitbucket.sonar.admin.SonarProxyServlet">
+        <url-pattern>/proxy/*</url-pattern>
+    </servlet>
+
+    <!-- PR Sidebar Summary Panel -->
+    <web-panel key="sonar-pr-sidebar-summary" location="bitbucket.pull-request.related-entities" weight="100">
+        <description>Shows Quality Gate summary in the PR sidebar</description>
+        <resource type="soy" name="view" location="com.yourcompany.bitbucket.sonar:sonar-admin-soy/com.yourcompany.bitbucket.sonar.prSidebarSummary" />
+    </web-panel>
+
+    <!-- PR Toolbar Status Panel -->
+    <web-panel key="sonar-pr-toolbar-status" location="bitbucket.pull-request.toolbar.actions" weight="1">
+        <description>Shows Quality Gate status in the PR toolbar</description>
+        <resource type="soy" name="view" location="com.yourcompany.bitbucket.sonar:sonar-admin-soy/com.yourcompany.bitbucket.sonar.prToolbarStatus" />
+    </web-panel>
+
+    <!-- Web Resources -->
+    <web-resource key="sonar-pr-resources" name="Sonar PR Integration Resources">
+        <resource type="download" name="sonar-pr-integration.js" location="js/sonar-pr-integration.js" />
+        <context>bitbucket.page.pull-request.view</context>
+    </web-resource>
+
+    <!-- Soy Resource -->
+    <soy key="sonar-admin-soy" name="Sonar Admin Soy Templates">
+        <resource type="soy" name="config.soy" location="soy/config.soy"/>
+    </soy>
+
+    <!-- Event Listener -->
+    <component key="pr-event-listener" class="com.yourcompany.bitbucket.sonar.listener.PullRequestSonarListener" />
+
+    <!-- Merge Check -->
+    <repository-merge-check key="sonar-quality-gate-check" 
+                            class="com.yourcompany.bitbucket.sonar.check.SonarMergeCheck"
+                            name="SonarQube Quality Gate Check"
+                            description="Prevents merging if SonarQube Quality Gate fails">
+        <icon>icons/sonar-icon.png</icon>
+    </repository-merge-check>
+
+    <!-- Dependency Injection / Service Imports -->
+    <component-import key="insightService" interface="com.atlassian.bitbucket.insight.InsightService"/>
+    <component-import key="pullRequestService" interface="com.atlassian.bitbucket.pull.PullRequestService"/>
+    <component-import key="repositoryService" interface="com.atlassian.bitbucket.repository.RepositoryService"/>
+    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+    <component-import key="soyTemplateRenderer" interface="com.atlassian.soy.renderer.SoyTemplateRenderer"/>
+    <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
+</atlassian-plugin>
