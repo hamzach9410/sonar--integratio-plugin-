@@ -79,3 +79,6 @@ env.ps1
 # Qodo (AI tooling)
 # ========================
 .qodo/
+
+.env
+.env.*
